@@ -1,11 +1,15 @@
 # Snake
 Implement snake Game on FPGA
 
+## 輸出格式(snake)
+每8個bit能儲存一個座標(0~100)，目前蛇身暫定最長為7，可視情況增加
+![snake](https://github.com/Potassium-chromate/Snake/blob/main/picture/Snake.png)
+
 ## 網格介紹
 一共是8*8的網格(黃色的部分)，其中白色設為出界區
 ![grid](https://github.com/Potassium-chromate/Snake/blob/main/picture/grid.png)
 
-## 狀態機介紹
+## 狀態機介紹(snake)
 * **reset:**
   - 將得分設置為0
   - 蛇頭位置設置在12(網格左上角)
