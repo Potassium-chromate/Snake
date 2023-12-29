@@ -1,3 +1,4 @@
+// vga_main is used to output the signal of V_sync
 module vga_main(clk, rst, V_sync, row_count);
 input clk,rst;
 
