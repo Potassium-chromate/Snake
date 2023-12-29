@@ -1,6 +1,6 @@
 module Snake(clk, rst, up, right, left, down, snake, apple, score, random_num);
 input clk, rst, up, right, left, down; 
-input [7:0] random_num;
+input [7:0] random_num; //use random number to renew apple
 output reg [9*8-1:0] snake; //index(0~8) * body(0~7) length
 output reg [7:0] apple;
 output reg [3:0] score;
