@@ -150,7 +150,7 @@ always@(posedge clk) begin
         end
 
         reset: begin 	
-                snake[71:64] <= 8'd12;
+		snake[71:64] <= 8'd12; // set as upper left corner of the grid
                 score_flag <= 1'b0;
                 apple <= random_num;
                 score <= 4'b0000;
@@ -173,7 +173,7 @@ always@(posedge clk) begin
 end
 
 always@(negedge up_t or negedge down_t or negedge left_t or negedge right_t or negedge rst or posedge rst_flag) begin
-    if ((~rst) || (rst_flag)) begin
+	if ((~rst) || (rst_flag)) begin // if reset was press or game was over
         up_flag <= 1'b0;
         down_flag <= 1'b0;
         right_flag <= 1'b0;
@@ -212,6 +212,7 @@ always@(negedge up_t or negedge down_t or negedge left_t or negedge right_t or n
 end
 
 always@(*) begin
+    //if down was press previously, then u can't press up.
     up_t = up | down_flag;
     down_t = down | up_flag;
     left_t = left | right_flag;
