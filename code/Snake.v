@@ -63,24 +63,27 @@ end
 
 always@(posedge clk) begin 
 	case(curr_state)
-		head_renew	: 	begin temp_head <= snake[71:64];//snake[71:64] is the head of snake
-						if(up_flag) begin
-                            pre_move <= snake[71:64] - 8'd10;
-                        end
-                        else if (down_flag) begin
-                            pre_move <= snake[71:64] + 8'd10;
-                        end
-                        else if (left_flag) begin
-                            pre_move <= snake[71:64] - 8'd1;
-                        end
-                        else if (right_flag) begin
-                            pre_move <= snake[71:64] + 8'd1;
-                        end
-                        else pre_move <= snake[71:64];
-                        rst_flag <= 1'b0;
-						end      
+	head_renew: begin 
+		temp_head <= snake[71:64];//snake[71:64] is the head of snake
+		if(up_flag) begin
+		//use pre_move to store the loction of head in the future
+		pre_move <= snake[71:64] - 8'd10; 
+		end
+		else if (down_flag) begin
+		    pre_move <= snake[71:64] + 8'd10;
+		end
+		else if (left_flag) begin
+		    pre_move <= snake[71:64] - 8'd1;
+		end
+		else if (right_flag) begin
+		    pre_move <= snake[71:64] + 8'd1;
+		end
+		else pre_move <= snake[71:64];
+		rst_flag <= 1'b0;
+		end      
 
         check: begin
+		//check if went out of bounds or ate apple
                 if (pre_move < 8'd12) dead_flag <= 1'b1;
                 else if (pre_move > 8'd89) dead_flag <= 1'b1;
                 else if (pre_move % 8'd10 == 1) dead_flag <= 1'b1;
@@ -92,7 +95,7 @@ always@(posedge clk) begin
                     end
                 end
 
-        move: begin
+        move: begin // move the body
                 if (~score_flag) begin // not need to growth
                     if (snake[7:0] != 8'd0) snake[7:0] <= snake[15:8];
                     else snake[7:0] <= 8'd0;
@@ -134,7 +137,7 @@ always@(posedge clk) begin
                 end
             end
 
-        check_body: begin
+        check_body: begin //check if it bite it self
             if (snake[71:64] == snake[63:56]) dead_flag <= 1'b1;
             else if (snake[71:64] == snake[55:48]) dead_flag <= 1'b1;
             else if (snake[71:64] == snake[47:40]) dead_flag <= 1'b1;
