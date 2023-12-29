@@ -1,16 +1,15 @@
-//output the H_sync and RGB value
-module vga_aux(clk, rst, H_sync, snake, apple, red_out, green_out, blue_out, work_clk, row_count);
+module vga_aux(clk, rst, H_sync, snake, apple, barrier, red_out, green_out, blue_out, work_clk, row_count);
 input clk,rst;
 input [9*8-1:0] snake;
 input [9:0] row_count;
-input [7:0] apple;
+input [7:0] apple, barrier;
 output reg H_sync,work_clk;
 output reg [3:0] red_out, green_out, blue_out;
 
 integer i;
 reg [7:0] c_idx, r_idx;
 reg [9:0] col_count;
-reg [100:0] apple_grid, head_grid, body_grid;
+reg [100:0] apple_grid, barrier_grid, head_grid, body_grid;
 // one grid is 42*42 pixels
 
 always@(posedge clk or negedge rst) begin 
@@ -51,22 +50,24 @@ always@(posedge clk or negedge rst) begin
                     end
                     else if ((col_count > 296)&&(col_count <= 632)) begin //297~632 (336 pixels)
                         if(head_grid[10*r_idx + c_idx]) begin
-                            //head colar is green    
                             red_out <= 4'b0000;
                             green_out <= 4'b1111;
                             blue_out <= 4'b0000;
                         end
                         else if(body_grid[10*r_idx + c_idx]) begin
-                            //body colar is white    
                             red_out <= 4'b1111;
                             green_out <= 4'b1111;
                             blue_out <= 4'b1111;
                         end
                         else if(apple_grid[10*r_idx + c_idx]) begin
-                            //apple colar is red    
                             red_out <= 4'b1111;
                             green_out <= 4'b0000;
                             blue_out <= 4'b0000;
+                        end
+								else if(barrier_grid[10*r_idx + c_idx]) begin
+                            red_out <= 4'b0000;
+                            green_out <= 4'b0000;
+                            blue_out <= 4'b1111;
                         end
                         else begin
                             red_out <= 4'b0000;
@@ -115,7 +116,6 @@ always@(posedge clk or negedge rst) begin
 end
 
 always@(posedge clk) begin
-   //output a complete clock in 800 pixels
    if (col_count == 10'd1) work_clk <= ~work_clk;
    else if (col_count == 10'd400) work_clk<= ~work_clk;
    else work_clk <= work_clk;
@@ -134,24 +134,40 @@ always@(*) begin
         body_grid[snake[15:8]] = 1'b1;
         body_grid[snake[7:0]] = 1'b1;
         apple_grid[apple] = 1'b1;
+		  barrier_grid[barrier] = 1'b1;
+
     end
-    else begin //when a line start, clear the grid
+    else begin
         for ( i = 0; i < 101; i = i +1) begin
                     head_grid[i] = 1'b0;
                     body_grid[i] = 1'b0;
                     apple_grid[i] = 1'b0;
+						  barrier_grid[i] = 1'b0;
+
         end
     end
 end
-
+/*
+always@(*) begin
+    snake_2[71:64] = 8'd12;
+    snake_2[63:56] = 8'd13;
+    snake_2[55:48] = 8'd23;
+    snake_2[47:40] = 8'd33;
+    snake_2[39:32] = 8'd34;
+    snake_2[31:24] = 8'd0;
+    snake_2[23:16] = 8'd0;
+    snake_2[15:8] = 8'd0;
+    snake_2[7:0] = 8'd0;
+end
+*/
 
 // find column index base on col_count
 always@(*) begin
-    //first column, index = 12,22,32...
+    //first column index = 12,22,32...
     if ((col_count > 296)&&(col_count <= 338)) c_idx = 8'd2;
-    //second column, index = 13,23,33...
+    //second column index = 13,23,33...
     else if ((col_count > 338)&&(col_count <= 380)) c_idx = 8'd3;
-    //third column, index = 14,24,34...
+    //third column index = 14,24,34...
     else if ((col_count > 380)&&(col_count <= 422)) c_idx = 8'd4;
     //4th column 
     else if ((col_count > 422)&&(col_count <= 464)) c_idx = 8'd5;
@@ -168,9 +184,9 @@ end
 
 // find column index base on row_count
 always@(*) begin
-    //first row, index = 12,13,14...
+    //first row index = 12,13,14...
     if ((row_count > 72)&&(row_count <= 114)) r_idx = 8'd1;
-    //second row, index = 22,23,24...
+    //second row index = 22,23,24...
     else if ((row_count > 114)&&(row_count <= 156)) r_idx = 8'd2;
     //third row index = 32,33,34...
     else if ((row_count > 156)&&(row_count <= 198)) r_idx = 8'd3;
@@ -187,4 +203,4 @@ always@(*) begin
     else r_idx = 8'd0;
 end
 
-endmodule
+endmodule 

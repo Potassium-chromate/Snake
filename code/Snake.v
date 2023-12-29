@@ -1,12 +1,14 @@
-module Snake(clk, rst, up, right, left, down, snake, apple, score, random_num);
+module Snake(clk, rst, up, right, left, down, snake, apple, barrier, score, dead_flag, score_flag ,win_flag,random_num,random_num_2);
 input clk, rst, up, right, left, down; 
-input [7:0] random_num; //use random number to renew apple
+input [7:0] random_num;
+input [7:0] random_num_2;
 output reg [9*8-1:0] snake; //index(0~8) * body(0~7) length
 output reg [7:0] apple;
+output reg [7:0] barrier;
 output reg [3:0] score;
-
+output reg dead_flag, score_flag,win_flag;
 reg [7:0] temp_head, pre_move;  
-reg down_flag, up_flag, right_flag, left_flag, dead_flag, score_flag, rst_flag;
+reg down_flag, up_flag, right_flag, left_flag, rst_flag;
 reg up_t, right_t, left_t, down_t;
 reg [2:0] curr_state, next_state;
 reg [9:0] col_count;
@@ -44,17 +46,19 @@ always@(*) begin
         check: begin
             if(~rst) next_state <= reset;
             else if(dead_flag) next_state <= reset;
+				else if(win_flag) next_state <= reset;
             else next_state <= move;     
         end
 
         move: begin
             if(~rst) next_state <= reset;
-            else next_state <= check_body;     
+            else next_state <= check_body; 				
         end
 
         check_body: begin
             if(~rst) next_state <= reset;
             else if(dead_flag) next_state <= reset;
+				else if(win_flag) next_state <= reset;
             else next_state <= head_renew;     
         end
    endcase
@@ -63,39 +67,38 @@ end
 
 always@(posedge clk) begin 
 	case(curr_state)
-	head_renew: begin 
-		temp_head <= snake[71:64];//snake[71:64] is the head of snake
-		if(up_flag) begin
-		//use pre_move to store the loction of head in the future
-		pre_move <= snake[71:64] - 8'd10; 
-		end
-		else if (down_flag) begin
-		    pre_move <= snake[71:64] + 8'd10;
-		end
-		else if (left_flag) begin
-		    pre_move <= snake[71:64] - 8'd1;
-		end
-		else if (right_flag) begin
-		    pre_move <= snake[71:64] + 8'd1;
-		end
-		else pre_move <= snake[71:64];
-		rst_flag <= 1'b0;
-		end      
+		head_renew	: 	begin temp_head <= snake[71:64];//snake[71:64] is the head of snake
+						if(up_flag) begin
+                            pre_move <= snake[71:64] - 8'd10;
+                        end
+                        else if (down_flag) begin
+                            pre_move <= snake[71:64] + 8'd10;
+                        end
+                        else if (left_flag) begin
+                            pre_move <= snake[71:64] - 8'd1;
+                        end
+                        else if (right_flag) begin
+                            pre_move <= snake[71:64] + 8'd1;
+                        end
+                        else pre_move <= snake[71:64];
+                        rst_flag <= 1'b0;
+						end      
 
         check: begin
-		//check if went out of bounds or ate apple
                 if (pre_move < 8'd12) dead_flag <= 1'b1;
                 else if (pre_move > 8'd89) dead_flag <= 1'b1;
                 else if (pre_move % 8'd10 == 1) dead_flag <= 1'b1;
                 else if (pre_move % 8'd10 == 0) dead_flag <= 1'b1;
-                else if (pre_move == apple) score_flag <= 1'b1;                  
+                else if (pre_move == apple) score_flag <= 1'b1;
+					 else if (pre_move == barrier) dead_flag <= 1'b1;
                 else begin 
                     score_flag <= 1'b0;
                     dead_flag <= 1'b0;
+						  win_flag <= 1'b0;
                     end
                 end
 
-        move: begin // move the body
+        move: begin
                 if (~score_flag) begin // not need to growth
                     if (snake[7:0] != 8'd0) snake[7:0] <= snake[15:8];
                     else snake[7:0] <= 8'd0;
@@ -129,15 +132,23 @@ always@(posedge clk) begin
                 //if apple was ate, then reset the location of apple
                 if(score_flag) begin
                     apple <= random_num;
+						  barrier <= random_num_2;
                     score <= score + 4'b0001;
+						  if(score==4'd8) 
+						  begin
+							win_flag<=1'b1;
+							score_flag<=1'b0;
+						  end
+						  else win_flag <=1'b0;			  
                 end
                 else begin
                     apple <= apple;
+						  barrier <= barrier;
                     score <= score;
                 end
             end
 
-        check_body: begin //check if it bite it self
+        check_body: begin
             if (snake[71:64] == snake[63:56]) dead_flag <= 1'b1;
             else if (snake[71:64] == snake[55:48]) dead_flag <= 1'b1;
             else if (snake[71:64] == snake[47:40]) dead_flag <= 1'b1;
@@ -150,9 +161,10 @@ always@(posedge clk) begin
         end
 
         reset: begin 	
-		snake[71:64] <= 8'd12; // set as upper left corner of the grid
+                snake[71:64] <= 8'd12;
                 score_flag <= 1'b0;
                 apple <= random_num;
+					 barrier <= random_num_2;
                 score <= 4'b0000;
                 rst_flag <= 1'b1;
                 for ( i = 0; i < 64; i = i +1) begin
@@ -164,6 +176,7 @@ always@(posedge clk) begin
                     snake[71:64] <= 8'd12;
                     score_flag <= 1'b0;
                     apple <= random_num;
+						  barrier <= random_num_2;
                     rst_flag <= 1'b1;
                     for ( i = 0; i < 64; i = i +1) begin
                         snake[i] <= 0;
@@ -173,7 +186,7 @@ always@(posedge clk) begin
 end
 
 always@(negedge up_t or negedge down_t or negedge left_t or negedge right_t or negedge rst or posedge rst_flag) begin
-	if ((~rst) || (rst_flag)) begin // if reset was press or game was over
+    if ((~rst) || (rst_flag)) begin
         up_flag <= 1'b0;
         down_flag <= 1'b0;
         right_flag <= 1'b0;
@@ -212,11 +225,10 @@ always@(negedge up_t or negedge down_t or negedge left_t or negedge right_t or n
 end
 
 always@(*) begin
-    //if down was press previously, then u can't press up.
     up_t = up | down_flag;
     down_t = down | up_flag;
     left_t = left | right_flag;
     right_t = right | left_flag;
 end
 
-endmodule
+endmodule 
