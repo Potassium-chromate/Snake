@@ -49,13 +49,13 @@ always@(*) begin
 
         move: begin
             if(~rst) next_state <= reset;
-            else next_state <= head_renew;     
+            else next_state <= check_body;     
         end
 
         check_body: begin
             if(~rst) next_state <= reset;
             else if(dead_flag) next_state <= reset;
-            else next_state <= move;     
+            else next_state <= head_renew;     
         end
    endcase
 	
