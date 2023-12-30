@@ -47,7 +47,7 @@ Implement snake Game on FPGA
 
 ## vga_main.v　
 ### 輸入
-- **clk:*** 當`vga_aux.v` 每完成一列(800 pixel)會輸出一個clock，而`vga_main.v`會在該clock內完成換列的輸出
+- **clk:** 當`vga_aux.v` 每完成一列(800 pixel)會輸出一個clock，而`vga_main.v`會在該clock內完成換列的輸出
 ### 輸出
 - **V_sync:** 
 - **row_count(10bit):** 用於計算目前輸出到第幾列(一張畫面共480列)
@@ -58,7 +58,7 @@ Implement snake Game on FPGA
 - **row_count(10bit):** 來自`vga_main.v`的輸出
 - **apple, barrier(8bit):** 來自`snake.v`的輸出
 ### 輸出
-- ***H_sync, work_clk**
+- **H_sync, work_clk**
 - **red_out, green_out, blue_out**
 ### 過程
 1. 先將`snake`、`apple`、`barrier`映射到8*8個的網格上。完成後，如果該格上有東西則該格為1'b1，否則為1'b0
@@ -71,3 +71,12 @@ Implement snake Game on FPGA
     * **蛇身:** 白色
     * **蘋果:** 紅色
     * **障礙物:** 藍色
+## firework.v
+### 輸入
+- **score_flag, dead_flag, win_flag:** 來自`snake.v`的輸出
+### 輸出
+- **col_1, col_2, row**
+### 輸出樣式
+- **吃到蘋果:** 笑臉 & 愛心
+- **碰到障礙物:** 叉叉 & 怒臉
+- **到達分數上限(9分):** win
