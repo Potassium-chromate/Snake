@@ -75,7 +75,7 @@ Implement snake Game on FPGA
 ### 輸入
 - **score_flag, dead_flag, win_flag:** 來自`snake.v`的輸出
 ### 輸出
-- **col_1, col_2, row**
+- **col_1, col_2, row(8bit)**
 ### 輸出樣式
 - **吃到蘋果:** 笑臉 & 愛心
 - **碰到障礙物:** 叉叉 & 怒臉
