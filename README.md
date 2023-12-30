@@ -61,5 +61,13 @@ Implement snake Game on FPGA
 - ***H_sync, work_clk**
 - **red_out, green_out, blue_out**
 ### 過程
-1. 先將`snake`、`apple`、`barrier`
-2. 
+1. 先將`snake`、`apple`、`barrier`映射到8*8個的網格上。完成後，如果該格上有東西則該格為1'b1，否則為1'b0
+2. 利用`row_count`和`col_count`來得知目前輸出的RGB值會對應到螢幕上的哪個位置
+3. 判斷應該要輸出8*8網格上的哪一個格子
+4. 根據網格上的物件判斷輸出顏色: 
+    * **無:** 黑色
+    * **遊戲邊界:** 黃色
+    * **蛇頭:** 綠色
+    * **蛇身:** 白色
+    * **蘋果:** 紅色
+    * **障礙物:** 藍色
