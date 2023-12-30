@@ -5,6 +5,7 @@
 `include "SevenDisplay.v"
 `include "random.v"
 `include "firework.v"
+`include "Snake.v"
 module Main(clk, rst, up, right, left, down, red, green, blue, H_sync, V_sync, seven_out, row, col_1, col_2);
 input clk, rst, up, right, left, down; 
 output wire [3:0] red, green, blue;
