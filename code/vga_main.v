@@ -12,27 +12,23 @@ always@(posedge clk or negedge rst) begin
         row_count <= 10'd0;
     end
     else begin
+        if((count > 0) && (count <= 515)) begin
+		      count <= count + 10'd1;
+		  end
+		  else begin
+		      count <= 10'd1;
+		  end
+		  
         if ((count > 0)&&(count <= 2)) begin //V sync 2 lines
             V_sync <= 1'b0;
-            count <= count + 10'd1;
             row_count <= 10'd0;
         end
-
         else if ((count > 2)&&(count <=35)) begin//V back porch 33 lines
             V_sync <= 1'b1;
-            count <= count + 10'd1;
         end
-
-        else if ((count > 35)&&(count <= 515)) begin//V display 408 lines
+        else begin // 36~515 V display 408 lines
             row_count <= row_count + 10'd1;
-            count <= count + 10'd1;
         end
-
-        else if ((count > 515)&&(count <= 524)) begin//V front porch 10 lines
-            count <= count + 10'd1;
-        end
-
-        else count <= 10'd1;
     end
 end
 

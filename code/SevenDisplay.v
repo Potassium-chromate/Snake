@@ -1,5 +1,5 @@
 module SevenDisplay(num,seven_out);
-input [3:0] num;
+input wire [3:0] num;
 output reg [6:0] seven_out;
 
 

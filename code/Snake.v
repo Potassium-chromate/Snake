@@ -1,19 +1,18 @@
-module Snake(clk, rst, up, right, left, down, snake, apple, barrier, score, dead_flag, score_flag ,win_flag,random_num,random_num_2);
-input clk, rst, up, right, left, down; 
+module Snake(clk_25M, clk, rst, up, right, left, down, snake, apple, barrier, score, dead_flag, score_flag ,win_flag,random_num,random_num_2,new_rnd,apple_grid, barrier_grid, head_grid, body_grid);
+input wire [100:0] apple_grid, barrier_grid, head_grid, body_grid;
+input clk_25M,clk, rst, up, right, left, down; 
 input [7:0] random_num;
 input [7:0] random_num_2;
 output reg [9*8-1:0] snake; //index(0~8) * body(0~7) length
 output reg [7:0] apple;
 output reg [7:0] barrier;
 output reg [3:0] score;
-output reg dead_flag, score_flag,win_flag;
-reg [7:0] temp_head, pre_move;  
+output reg dead_flag, score_flag,win_flag,new_rnd;
+reg [7:0] temp_head, pre_move;
 reg down_flag, up_flag, right_flag, left_flag, rst_flag;
 reg up_t, right_t, left_t, down_t;
 reg [2:0] curr_state, next_state;
 reg [9:0] col_count;
-
-
 
 integer i;
 
@@ -67,22 +66,23 @@ end
 
 always@(posedge clk) begin 
 	case(curr_state)
-		head_renew	: 	begin temp_head <= snake[71:64];//snake[71:64] is the head of snake
+		head_renew	: 	begin
+				temp_head <= snake[71:64];//snake[71:64] is the head of snake
 						if(up_flag) begin
-                            pre_move <= snake[71:64] - 8'd10;
-                        end
-                        else if (down_flag) begin
-                            pre_move <= snake[71:64] + 8'd10;
-                        end
-                        else if (left_flag) begin
-                            pre_move <= snake[71:64] - 8'd1;
-                        end
-                        else if (right_flag) begin
-                            pre_move <= snake[71:64] + 8'd1;
-                        end
+								pre_move <= snake[71:64] - 8'd10;
+                  end
+                  else if (down_flag) begin
+								pre_move <= snake[71:64] + 8'd10;
+                  end
+                  else if (left_flag) begin
+                        pre_move <= snake[71:64] - 8'd1;
+                  end
+                  else if (right_flag) begin
+                        pre_move <= snake[71:64] + 8'd1;
+                  end
                         else pre_move <= snake[71:64];
-                        rst_flag <= 1'b0;
-						end      
+                  rst_flag <= 1'b0;
+				end      
 
         check: begin
                 if (pre_move < 8'd12) dead_flag <= 1'b1;
@@ -229,6 +229,15 @@ always@(*) begin
     down_t = down | up_flag;
     left_t = left | right_flag;
     right_t = right | left_flag;
+end
+
+always@(posedge clk) begin
+	 if(dead_flag||score_flag||win_flag) begin
+		  new_rnd<=0;
+	 end
+	 else begin
+	     new_rnd<=1;
+	 end
 end
 
 endmodule 

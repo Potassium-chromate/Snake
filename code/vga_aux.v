@@ -1,4 +1,4 @@
-module vga_aux(clk, rst, H_sync, snake, apple, barrier, red_out, green_out, blue_out, work_clk, row_count);
+module vga_aux(clk, rst, H_sync, snake, apple, barrier, red_out, green_out, blue_out, work_clk, row_count,apple_grid, barrier_grid, head_grid, body_grid);
 input clk,rst;
 input [9*8-1:0] snake;
 input [9:0] row_count;
@@ -9,105 +9,73 @@ output reg [3:0] red_out, green_out, blue_out;
 integer i;
 reg [7:0] c_idx, r_idx;
 reg [9:0] col_count;
-reg [100:0] apple_grid, barrier_grid, head_grid, body_grid;
+output reg [100:0] apple_grid, barrier_grid, head_grid, body_grid;
+reg [2:0]color;
 // one grid is 42*42 pixels
 
 always@(posedge clk or negedge rst) begin 
         if (~rst) col_count <= 10'd1;
         else begin
+			   if((col_count > 0) && (col_count <= 799)) begin
+				 	 col_count <= col_count + 10'd1;
+			   end
+			   else begin
+				 	 col_count <= 10'd1;
+			   end
+			  
             if ((col_count > 0)&&(col_count <= 96)) begin//h sync 96 pix
                 H_sync <= 1'b0;
-                red_out <= 4'b0000;
-                green_out <= 4'b0000;
-                blue_out <= 4'b0000;
-                col_count <= col_count + 10'd1;
             end
-
-            else if ((col_count > 96)&&(col_count <= 144)) begin //h back porch 48 pix
+            else begin //h back porch 48 pix
                 H_sync <= 1'b1;
-                col_count <= col_count + 10'd1;
             end
-
+			  
+            if ((col_count > 0)&&(col_count <= 144)) begin//h sync 96 pix
+					 color <= 3'd0;
+            end
             else if ((col_count > 144)&&(col_count <= 784)) begin //h display 640 pix (145~784)
-                if ((row_count > 30)&&(row_count <= 72))begin //upper bound 31~72 (42 lines)                  
+                if (((row_count > 30)&&(row_count <= 72))||((row_count > 408)&&(row_count <= 450)))begin //upper bound 31~72 & 409~450           
                     if ((col_count > 254)&&(col_count <= 674)) begin //255~674 (420 pixels)
-                        red_out <= 4'b1111;
-                        green_out <= 4'b1111;
-                        blue_out <= 4'b0000;
+                        color <= 3'd5;
                     end
                     else begin //145~254 and 675~784 (110 + 110 pixels)
-                        red_out <= 4'b0000;
-                        green_out <= 4'b0000;
-                        blue_out <= 4'b0000;
+                        color <= 3'd0;
                     end
                 end
                 else if ((row_count > 72)&&(row_count <= 408))begin //side bound 73~408 (336 lines)
                     //255~296 and 633~674 (42 + 42 pixels)
-                    if (((col_count > 254)&&(col_count <= 296))||((col_count > 632)&&(col_count <= 674))) begin 
-                        red_out <= 4'b1111;
-                        green_out <= 4'b1111;
-                        blue_out <= 4'b0000;
-                    end
-                    else if ((col_count > 296)&&(col_count <= 632)) begin //297~632 (336 pixels)
+                    if ((col_count > 296)&&(col_count <= 632)) begin //297~632 (336 pixels)
                         if(head_grid[10*r_idx + c_idx]) begin
-                            red_out <= 4'b0000;
-                            green_out <= 4'b1111;
-                            blue_out <= 4'b0000;
+                            color <= 3'd3;
                         end
                         else if(body_grid[10*r_idx + c_idx]) begin
-                            red_out <= 4'b1111;
-                            green_out <= 4'b1111;
-                            blue_out <= 4'b1111;
+                            color <= 3'd1;
                         end
                         else if(apple_grid[10*r_idx + c_idx]) begin
-                            red_out <= 4'b1111;
-                            green_out <= 4'b0000;
-                            blue_out <= 4'b0000;
+                            color <= 3'd2;
                         end
 								else if(barrier_grid[10*r_idx + c_idx]) begin
-                            red_out <= 4'b0000;
-                            green_out <= 4'b0000;
-                            blue_out <= 4'b1111;
+                            color <= 3'd4;
                         end
                         else begin
-                            red_out <= 4'b0000;
-                            green_out <= 4'b0000;
-                            blue_out <= 4'b0000;
+                            color <= 3'd0;
                         end
-
+                    end
+                    else if (((col_count > 254)&&(col_count <= 296))||((col_count > 632)&&(col_count <= 674))) begin 
+                        color <= 3'd5;
                     end
                     else begin //145~254 and 675~784 (220 pixels)
-                        red_out <= 4'b0000;
-                        green_out <= 4'b0000;
-                        blue_out <= 4'b0000;
-                    end
-                end
-                else if ((row_count > 408)&&(row_count <= 450))begin //lower bound 409~450 (42 lines)                  
-                    if ((col_count > 254)&&(col_count <= 674)) begin //255~674 (420 pixels)
-                        red_out <= 4'b1111;
-                        green_out <= 4'b1111;
-                        blue_out <= 4'b0000;
-                    end
-                    else begin //145~254 and 675~784 (110 + 110 pixels)
-                        red_out <= 4'b0000;
-                        green_out <= 4'b0000;
-                        blue_out <= 4'b0000;
+                        color <= 3'd0;
                     end
                 end
                 else begin
-                    red_out <= 4'b0000;
-                    green_out <= 4'b0000;
-                    blue_out <= 4'b0000;
+                    color <= 3'd0;
                 end
 
-                col_count <= col_count + 10'd1;
             end
 
             else if ((col_count > 784)&&(col_count <= 799)) begin //h front porch 16 pix
-                red_out <= 4'b0000;
-                green_out <= 4'b0000;
-                blue_out <= 4'b0000;
-                col_count <= col_count + 10'd1;
+                color <= 3'd0;
             end
 
             else col_count <= 10'd1;
@@ -148,6 +116,53 @@ always@(*) begin
     end
 end
 
+always@(color) begin
+    if(color == 3'd1) begin //white
+        red_out <= 4'b1111;
+        green_out <= 4'b1111;
+        blue_out <= 4'b1111;
+	 end
+    else if(color == 3'd2) begin //red
+        red_out <= 4'b1111;
+        green_out <= 4'b0000;
+        blue_out <= 4'b0000;
+	 end
+    else if(color == 3'd3) begin //green
+        red_out <= 4'b0000;
+        green_out <= 4'b1111;
+        blue_out <= 4'b0000;
+	 end
+    else if(color == 3'd4) begin //blue
+        red_out <= 4'b0000;
+        green_out <= 4'b0000;
+        blue_out <= 4'b1111;
+	 end
+    else if(color == 3'd5) begin //yellow
+        red_out <= 4'b1111;
+        green_out <= 4'b1111;
+        blue_out <= 4'b0000;
+	 end
+	 else begin //black
+        red_out <= 4'b0000;
+        green_out <= 4'b0000;
+        blue_out <= 4'b0000;
+	 end
+end
+
+
+/*
+always@(*) begin
+    snake_2[71:64] = 8'd12;
+    snake_2[63:56] = 8'd13;
+    snake_2[55:48] = 8'd23;
+    snake_2[47:40] = 8'd33;
+    snake_2[39:32] = 8'd34;
+    snake_2[31:24] = 8'd0;
+    snake_2[23:16] = 8'd0;
+    snake_2[15:8] = 8'd0;
+    snake_2[7:0] = 8'd0;
+end
+*/
 
 // find column index base on col_count
 always@(*) begin
