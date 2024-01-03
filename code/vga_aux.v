@@ -149,21 +149,6 @@ always@(color) begin
 	 end
 end
 
-
-/*
-always@(*) begin
-    snake_2[71:64] = 8'd12;
-    snake_2[63:56] = 8'd13;
-    snake_2[55:48] = 8'd23;
-    snake_2[47:40] = 8'd33;
-    snake_2[39:32] = 8'd34;
-    snake_2[31:24] = 8'd0;
-    snake_2[23:16] = 8'd0;
-    snake_2[15:8] = 8'd0;
-    snake_2[7:0] = 8'd0;
-end
-*/
-
 // find column index base on col_count
 always@(*) begin
     //first column index = 12,22,32...
